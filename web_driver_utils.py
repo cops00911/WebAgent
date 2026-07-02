@@ -1,6 +1,8 @@
 import logging
 import base64
 import os
+import sys
+import subprocess
 import json
 import time
 from typing import Dict, Any, List, Tuple
@@ -14,11 +16,30 @@ def setup_browser(headless: bool = False, timeout: int = 30000) -> Tuple[Playwri
     """
     logger.info(f"Launching Playwright browser (headless={headless})...")
     playwright_instance = sync_playwright().start()
-    # Use Chromium as standard browser
-    browser = playwright_instance.chromium.launch(
-        headless=headless,
-        args=["--disable-web-security", "--no-sandbox"]
-    )
+    
+    try:
+        # Use Chromium as standard browser
+        browser = playwright_instance.chromium.launch(
+            headless=headless,
+            args=["--disable-web-security", "--no-sandbox"]
+        )
+    except Exception as e:
+        err_str = str(e)
+        if "executable doesn't exist" in err_str.lower() or "playwright install" in err_str.lower():
+            logger.warning("Playwright Chromium binary missing. Auto-installing Chromium...")
+            try:
+                subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=True)
+                # Retry launching after installation
+                browser = playwright_instance.chromium.launch(
+                    headless=headless,
+                    args=["--disable-web-security", "--no-sandbox"]
+                )
+            except Exception as retry_err:
+                logger.error(f"Failed to auto-install Playwright Chromium binary: {retry_err}")
+                raise e
+        else:
+            raise e
+
     context = browser.new_context(
         viewport={"width": 1280, "height": 800},
         ignore_https_errors=True
