@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results ignored="0" total="1" passed="1" failed="0" skipped="0">
+  <reporter-output>
+  </reporter-output>
+  <suite started-at="2026-06-25T13:02:28 IST" name="Command line suite" finished-at="2026-06-25T13:02:48 IST" duration-ms="20286">
+    <groups>
+    </groups>
+    <test started-at="2026-06-25T13:02:28 IST" name="Command line test" finished-at="2026-06-25T13:02:48 IST" duration-ms="20286">
+      <class name="com.example.PlaywrightAutomation">
+        <test-method is-config="true" signature="setUp()[pri:0, instance:com.example.PlaywrightAutomation@52bf72b5]" started-at="2026-06-25T13:02:28 IST" name="setUp" finished-at="2026-06-25T13:02:30 IST" duration-ms="2176" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setUp -->
+        <test-method is-config="true" signature="setUpMethod()[pri:0, instance:com.example.PlaywrightAutomation@52bf72b5]" started-at="2026-06-25T13:02:30 IST" name="setUpMethod" finished-at="2026-06-25T13:02:30 IST" duration-ms="228" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setUpMethod -->
+        <test-method signature="testTestSteps()[pri:0, instance:com.example.PlaywrightAutomation@52bf72b5]" started-at="2026-06-25T13:02:30 IST" name="testTestSteps" description="test_steps" finished-at="2026-06-25T13:02:48 IST" duration-ms="17830" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- testTestSteps -->
+        <test-method is-config="true" signature="tearDownMethod()[pri:0, instance:com.example.PlaywrightAutomation@52bf72b5]" started-at="2026-06-25T13:02:48 IST" name="tearDownMethod" finished-at="2026-06-25T13:02:48 IST" duration-ms="9" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- tearDownMethod -->
+        <test-method is-config="true" signature="tearDown()[pri:0, instance:com.example.PlaywrightAutomation@52bf72b5]" started-at="2026-06-25T13:02:48 IST" name="tearDown" finished-at="2026-06-25T13:02:48 IST" duration-ms="20" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- tearDown -->
+      </class> <!-- com.example.PlaywrightAutomation -->
+    </test> <!-- Command line test -->
+  </suite> <!-- Command line suite -->
+</testng-results>

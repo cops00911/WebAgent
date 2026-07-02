@@ -1,0 +1,16 @@
+# Web Agent Test Steps
+- Type "standard_user" in Username
+- Type "secret_sauce" in Password
+- Click on "Login" button
+- Verify page title contains "Swag Labs"
+- Click on "Sauce Labs Backpack" text
+- Click on "Add to cart" button
+- Click on "Shopping cart icon" button
+- Click on "Checkout" button
+- Type "Rachit" in First name
+- Type "Mehta" in Last name
+- Type "390023" in Zip/Postal code
+- Click on "Continue" button
+- Click on "Finish" button
+- Verify page contains "Thank you for your order"
+

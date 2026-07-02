@@ -1,0 +1,2 @@
+# Local test steps for autofill
+- Fill the details for new partner by agent.

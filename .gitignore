@@ -1,0 +1,22 @@
+# Environment configuration
+.env
+
+# Python cache & build directories
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Application execution logs & visual reports
+*.log
+web_report_*.html
+web_report.html
+
+# Generated automation outputs (compiled test files)
+test-output/
+*.class
+bin/
+target/
+
+# Playwright recordings & trace logs
+videos/
+trace.zip

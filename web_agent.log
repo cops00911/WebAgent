@@ -1,0 +1,103 @@
+2026-07-02 14:26:06,997 [INFO] WebAgent.main - Loaded 2 test case(s) for execution.
+2026-07-02 14:26:06,997 [INFO] WebAgent.agent - No OpenAI API key found. WebAgent will use Heuristics Engine.
+2026-07-02 14:26:06,997 [INFO] WebAgent.main - 
+==================================================
+2026-07-02 14:26:06,997 [INFO] WebAgent.main - RUNNING TEST CASE 1 of 2: VerifyProductPageAfterLogin
+2026-07-02 14:26:06,997 [INFO] WebAgent.main - Source: multi_testcase.xlsx: Row 2
+2026-07-02 14:26:06,997 [INFO] WebAgent.main - Steps (4):
+2026-07-02 14:26:06,997 [INFO] WebAgent.main -   1. Type "standard_user" in username
+2026-07-02 14:26:06,997 [INFO] WebAgent.main -   2. Type "secret_sauce" in password
+2026-07-02 14:26:06,997 [INFO] WebAgent.main -   3. Click on "Login" button
+2026-07-02 14:26:06,997 [INFO] WebAgent.main -   4. Verify page title contains "swag lab"
+2026-07-02 14:26:06,997 [INFO] WebAgent.main - ==================================================
+2026-07-02 14:26:06,997 [INFO] WebAgent.driver_utils - Launching Playwright browser (headless=False)...
+2026-07-02 14:26:08,380 [INFO] WebAgent.driver_utils - Browser launched and new page opened successfully.
+2026-07-02 14:26:08,381 [INFO] WebAgent.main - Navigating to initial target URL: https://www.saucedemo.com/
+2026-07-02 14:26:08,890 [INFO] WebAgent.agent - Starting execution of 4 web test steps...
+2026-07-02 14:26:10,012 [INFO] WebAgent.agent - 
+--- STEP 1 of 4: 'Type "standard_user" in username' ---
+2026-07-02 14:26:10,099 [INFO] WebAgent.agent - Parsing step with Heuristics: 'Type "standard_user" in username'
+2026-07-02 14:26:10,099 [INFO] WebAgent.agent - Action: FILL, Target: [data-test="username"], Value: 'standard_user'
+2026-07-02 14:26:10,099 [INFO] WebAgent.agent - Reasoning: Heuristics matched element with score 16: [data-test="username"]
+2026-07-02 14:26:11,747 [INFO] WebAgent.agent - 
+--- STEP 2 of 4: 'Type "secret_sauce" in password' ---
+2026-07-02 14:26:11,815 [INFO] WebAgent.agent - Parsing step with Heuristics: 'Type "secret_sauce" in password'
+2026-07-02 14:26:11,815 [INFO] WebAgent.agent - Action: FILL, Target: [data-test="password"], Value: 'secret_sauce'
+2026-07-02 14:26:11,815 [INFO] WebAgent.agent - Reasoning: Heuristics matched element with score 30: [data-test="password"]
+2026-07-02 14:26:13,389 [INFO] WebAgent.agent - 
+--- STEP 3 of 4: 'Click on "Login" button' ---
+2026-07-02 14:26:13,425 [INFO] WebAgent.agent - Parsing step with Heuristics: 'Click on "Login" button'
+2026-07-02 14:26:13,425 [INFO] WebAgent.agent - Action: CLICK, Target: [data-test="login-button"], Value: ''
+2026-07-02 14:26:13,425 [INFO] WebAgent.agent - Reasoning: Heuristics matched element with score 138: [data-test="login-button"]
+2026-07-02 14:26:15,114 [INFO] WebAgent.agent - 
+--- STEP 4 of 4: 'Verify page title contains "swag lab"' ---
+2026-07-02 14:26:15,182 [INFO] WebAgent.agent - Parsing step with Heuristics: 'Verify page title contains "swag lab"'
+2026-07-02 14:26:15,182 [INFO] WebAgent.agent - Action: VERIFY, Target: N/A, Value: 'title:swag lab'
+2026-07-02 14:26:15,182 [INFO] WebAgent.agent - Reasoning: Verifying page title contains: swag lab
+2026-07-02 14:26:16,197 [INFO] WebAgent.agent - ✓ Verification success: Page title contains 'swag lab'
+2026-07-02 14:26:16,808 [INFO] WebAgent.reporter - Generating HTML report at '/Users/parker.m/eclipse-workspace/WebAgent/web_report_VerifyProductPageAfterLogin.html'...
+2026-07-02 14:26:16,812 [INFO] WebAgent.main - ✓ Automated visual HTML report generated at: /Users/parker.m/eclipse-workspace/WebAgent/web_report_VerifyProductPageAfterLogin.html
+2026-07-02 14:26:16,812 [INFO] WebAgent.main - 🎉 Test Case 'VerifyProductPageAfterLogin' executed successfully!
+2026-07-02 14:26:16,812 [INFO] WebAgent.main - Cleaning up browser sessions...
+2026-07-02 14:26:16,918 [INFO] WebAgent.main - Playwright session terminated.
+2026-07-02 14:26:16,919 [INFO] WebAgent.main - 
+==================================================
+2026-07-02 14:26:16,919 [INFO] WebAgent.main - RUNNING TEST CASE 2 of 2: VerifyLogoutFunctionality
+2026-07-02 14:26:16,919 [INFO] WebAgent.main - Source: multi_testcase.xlsx: Row 3
+2026-07-02 14:26:16,919 [INFO] WebAgent.main - Steps (6):
+2026-07-02 14:26:16,919 [INFO] WebAgent.main -   1. Type "standard_user" in username
+2026-07-02 14:26:16,919 [INFO] WebAgent.main -   2. Type "secret_sauce" in password
+2026-07-02 14:26:16,919 [INFO] WebAgent.main -   3. Click on "Login" button
+2026-07-02 14:26:16,919 [INFO] WebAgent.main -   4. Verify page title contains "swag lab"
+2026-07-02 14:26:16,919 [INFO] WebAgent.main -   5. Click on "burger menu"
+2026-07-02 14:26:16,919 [INFO] WebAgent.main -   6. Click on "Logout" option.
+2026-07-02 14:26:16,919 [INFO] WebAgent.main - ==================================================
+2026-07-02 14:26:16,919 [INFO] WebAgent.driver_utils - Launching Playwright browser (headless=False)...
+2026-07-02 14:26:17,483 [INFO] WebAgent.driver_utils - Browser launched and new page opened successfully.
+2026-07-02 14:26:17,484 [INFO] WebAgent.main - Navigating to initial target URL: https://www.saucedemo.com/
+2026-07-02 14:26:17,946 [INFO] WebAgent.agent - Starting execution of 6 web test steps...
+2026-07-02 14:26:19,085 [INFO] WebAgent.agent - 
+--- STEP 1 of 6: 'Type "standard_user" in username' ---
+2026-07-02 14:26:19,165 [INFO] WebAgent.agent - Parsing step with Heuristics: 'Type "standard_user" in username'
+2026-07-02 14:26:19,165 [INFO] WebAgent.agent - Action: FILL, Target: [data-test="username"], Value: 'standard_user'
+2026-07-02 14:26:19,165 [INFO] WebAgent.agent - Reasoning: Heuristics matched element with score 16: [data-test="username"]
+2026-07-02 14:26:20,793 [INFO] WebAgent.agent - 
+--- STEP 2 of 6: 'Type "secret_sauce" in password' ---
+2026-07-02 14:26:20,844 [INFO] WebAgent.agent - Parsing step with Heuristics: 'Type "secret_sauce" in password'
+2026-07-02 14:26:20,845 [INFO] WebAgent.agent - Action: FILL, Target: [data-test="password"], Value: 'secret_sauce'
+2026-07-02 14:26:20,845 [INFO] WebAgent.agent - Reasoning: Heuristics matched element with score 30: [data-test="password"]
+2026-07-02 14:26:22,429 [INFO] WebAgent.agent - 
+--- STEP 3 of 6: 'Click on "Login" button' ---
+2026-07-02 14:26:22,474 [INFO] WebAgent.agent - Parsing step with Heuristics: 'Click on "Login" button'
+2026-07-02 14:26:22,474 [INFO] WebAgent.agent - Action: CLICK, Target: [data-test="login-button"], Value: ''
+2026-07-02 14:26:22,474 [INFO] WebAgent.agent - Reasoning: Heuristics matched element with score 138: [data-test="login-button"]
+2026-07-02 14:26:24,178 [INFO] WebAgent.agent - 
+--- STEP 4 of 6: 'Verify page title contains "swag lab"' ---
+2026-07-02 14:26:24,248 [INFO] WebAgent.agent - Parsing step with Heuristics: 'Verify page title contains "swag lab"'
+2026-07-02 14:26:24,248 [INFO] WebAgent.agent - Action: VERIFY, Target: N/A, Value: 'title:swag lab'
+2026-07-02 14:26:24,248 [INFO] WebAgent.agent - Reasoning: Verifying page title contains: swag lab
+2026-07-02 14:26:25,261 [INFO] WebAgent.agent - ✓ Verification success: Page title contains 'swag lab'
+2026-07-02 14:26:25,858 [INFO] WebAgent.agent - 
+--- STEP 5 of 6: 'Click on "burger menu"' ---
+2026-07-02 14:26:25,930 [INFO] WebAgent.agent - Parsing step with Heuristics: 'Click on "burger menu"'
+2026-07-02 14:26:25,931 [INFO] WebAgent.agent - Action: CLICK, Target: #react-burger-menu-btn, Value: ''
+2026-07-02 14:26:25,931 [INFO] WebAgent.agent - Reasoning: Heuristics matched element with score 132: #react-burger-menu-btn
+2026-07-02 14:26:27,562 [INFO] WebAgent.agent - 
+--- STEP 6 of 6: 'Click on "Logout" option.' ---
+2026-07-02 14:26:27,626 [INFO] WebAgent.agent - Parsing step with Heuristics: 'Click on "Logout" option.'
+2026-07-02 14:26:27,626 [INFO] WebAgent.agent - Action: CLICK, Target: [data-test="logout-sidebar-link"], Value: ''
+2026-07-02 14:26:27,627 [INFO] WebAgent.agent - Reasoning: Heuristics matched element with score 272: [data-test="logout-sidebar-link"]
+2026-07-02 14:26:29,334 [INFO] WebAgent.reporter - Generating HTML report at '/Users/parker.m/eclipse-workspace/WebAgent/web_report_VerifyLogoutFunctionality.html'...
+2026-07-02 14:26:29,338 [INFO] WebAgent.main - ✓ Automated visual HTML report generated at: /Users/parker.m/eclipse-workspace/WebAgent/web_report_VerifyLogoutFunctionality.html
+2026-07-02 14:26:29,339 [INFO] WebAgent.main - 🎉 Test Case 'VerifyLogoutFunctionality' executed successfully!
+2026-07-02 14:26:29,339 [INFO] WebAgent.main - Cleaning up browser sessions...
+2026-07-02 14:26:29,446 [INFO] WebAgent.main - Playwright session terminated.
+2026-07-02 14:26:29,447 [INFO] WebAgent.main - ✓ Generated TestNG Playwright Java code written to: PlaywrightAutomation.java
+2026-07-02 14:26:29,447 [INFO] WebAgent.main - 
+==================================================
+2026-07-02 14:26:29,447 [INFO] WebAgent.main - EXECUTION SUMMARY
+2026-07-02 14:26:29,447 [INFO] WebAgent.main - ==================================================
+2026-07-02 14:26:29,447 [INFO] WebAgent.main -   * VerifyProductPageAfterLogin         [PASSED]  
+2026-07-02 14:26:29,447 [INFO] WebAgent.main -   * VerifyLogoutFunctionality           [PASSED]  
+2026-07-02 14:26:29,447 [INFO] WebAgent.main - ==================================================
+2026-07-02 14:26:29,447 [INFO] WebAgent.main - 🎉 All test cases completed successfully!
