@@ -11,13 +11,19 @@ from web_reporter import WebHTMLReporter
 import web_driver_utils
 
 # Configure logging to stderr/file only to prevent stdout pollution (which corrupts standard input/output JSON-RPC communication)
+handlers = [logging.StreamHandler(sys.stderr)]
+try:
+    handlers.append(logging.FileHandler("web_mcp_server.log", mode="w"))
+except OSError:
+    try:
+        handlers.append(logging.FileHandler(os.path.expanduser("~/web_mcp_server.log"), mode="w"))
+    except OSError:
+        pass
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stderr),
-        logging.FileHandler("web_mcp_server.log", mode="w")
-    ]
+    handlers=handlers
 )
 logger = logging.getLogger("WebAgent.mcp_server")
 
