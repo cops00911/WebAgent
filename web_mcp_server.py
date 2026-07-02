@@ -10,15 +10,22 @@ from web_agent import WebAgent
 from web_reporter import WebHTMLReporter
 import web_driver_utils
 
-# Configure logging to stderr/file only to prevent stdout pollution (which corrupts standard input/output JSON-RPC communication)
+# Resolve and set the working directory to a writable location under the user's home folder
+OUTPUT_DIR = os.path.expanduser("~/web-agent-reports")
+try:
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    os.chdir(OUTPUT_DIR)
+except Exception:
+    import tempfile
+    OUTPUT_DIR = tempfile.gettempdir()
+    os.chdir(OUTPUT_DIR)
+
+# Configure logging to stderr/file only to prevent stdout pollution
 handlers = [logging.StreamHandler(sys.stderr)]
 try:
     handlers.append(logging.FileHandler("web_mcp_server.log", mode="w"))
 except OSError:
-    try:
-        handlers.append(logging.FileHandler(os.path.expanduser("~/web_mcp_server.log"), mode="w"))
-    except OSError:
-        pass
+    pass
 
 logging.basicConfig(
     level=logging.INFO,
