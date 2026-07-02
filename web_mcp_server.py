@@ -69,26 +69,7 @@ async def handle_list_tools() -> list[types.Tool]:
         )
     ]
 
-@server.call_tool()
-async def handle_call_tool(
-    name: str, arguments: dict | None
-) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
-    """
-    Execute the tool and return the output status and generated code path to the LLM.
-    """
-    if name != "run_autonomous_test":
-        raise ValueError(f"Tool '{name}' not found.")
-        
-    url = arguments.get("url")
-    steps = arguments.get("steps", [])
-    testcase_name = arguments.get("testcase_name", "PlaywrightMCPCase")
-    headless = arguments.get("headless", True)
-    
-    if not url or not steps:
-        return [types.TextContent(type="text", text="Error: Both 'url' and 'steps' are required.")]
-
-    logger.info(f"Starting MCP run_autonomous_test for URL: {url} with {len(steps)} steps.")
-    
+def run_test_sync(url: str, steps: list, testcase_name: str, headless: bool) -> str:
     # Initialize the WebAgent (uses env OPENAI_API_KEY if present, otherwise heuristics)
     agent = WebAgent()
     
@@ -123,11 +104,7 @@ async def handle_call_tool(
             f"### Generated Playwright Java Code:\n```java\n{java_code}\n```"
         )
         
-        return [types.TextContent(type="text", text=result_message)]
-        
-    except Exception as e:
-        logger.error(f"Error during autonomous run: {e}", exc_info=True)
-        return [types.TextContent(type="text", text=f"Error executing autonomous test: {str(e)}")]
+        return result_message
         
     finally:
         logger.info("Cleaning up browser resources...")
@@ -142,6 +119,39 @@ async def handle_call_tool(
             except Exception as ex:
                 logger.error(f"Error stopping Playwright: {ex}")
         logger.info("Browser resources cleaned up.")
+
+@server.call_tool()
+async def handle_call_tool(
+    name: str, arguments: dict | None
+) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+    """
+    Execute the tool and return the output status and generated code path to the LLM.
+    """
+    if name != "run_autonomous_test":
+        raise ValueError(f"Tool '{name}' not found.")
+        
+    url = arguments.get("url")
+    steps = arguments.get("steps", [])
+    testcase_name = arguments.get("testcase_name", "PlaywrightMCPCase")
+    headless = arguments.get("headless", True)
+    
+    if not url or not steps:
+        return [types.TextContent(type="text", text="Error: Both 'url' and 'steps' are required.")]
+
+    logger.info(f"Starting MCP run_autonomous_test for URL: {url} with {len(steps)} steps.")
+    
+    try:
+        # Run the synchronous Playwright logic in a background thread to prevent loop conflicts
+        result_message = await asyncio.to_thread(
+            run_test_sync, url, steps, testcase_name, headless
+        )
+        return [types.TextContent(type="text", text=result_message)]
+        
+    except Exception as e:
+        logger.error(f"Error during autonomous run: {e}", exc_info=True)
+        return [types.TextContent(type="text", text=f"Error executing autonomous test: {str(e)}")]
+
+
 
 async def main():
     logger.info("Initializing WebAgent MCP Stdio Server...")
