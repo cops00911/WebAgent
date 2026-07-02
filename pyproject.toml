@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "web-agent-mcp"
+version = "0.1.0"
+description = "Autonomous QA WebAgent MCP Server"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "playwright>=1.40.0",
+    "openai>=1.0.0",
+    "python-dotenv>=1.0.0",
+    "openpyxl>=3.1.0",
+    "mcp>=1.0.0"
+]
+
+[project.scripts]
+web-agent-mcp = "web_mcp_server:run"
