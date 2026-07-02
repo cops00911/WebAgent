@@ -18,3 +18,7 @@ dependencies = [
 
 [project.scripts]
 web-agent-mcp = "web_mcp_server:run"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
