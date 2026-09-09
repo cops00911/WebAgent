@@ -198,11 +198,18 @@ class WebAgent:
             expected_text = verify_text_match.group(1)
             return {"action": "verify", "element_id": None, "value": f"text:{expected_text}", "reasoning": f"Verifying page contains text: {expected_text}"}
 
+        verify_dom_match = re.search(r"(?:verify|assert)\s+(?:dom|html|page\s+source)\s+contains\s+['\"]?([^'\"]+)['\"]?", step_clean)
+        if verify_dom_match:
+            expected_text = verify_dom_match.group(1)
+            return {"action": "verify", "element_id": None, "value": f"dom:{expected_text}", "reasoning": f"Verifying DOM HTML contains: {expected_text}"}
+
         if "verify" in step_clean or "assert" in step_clean:
             quoted = re.findall(r"['\"]([^'\"]+)['\"]", step_text)
             val = quoted[0] if quoted else ""
             if "title" in step_clean:
                 return {"action": "verify", "element_id": None, "value": f"title:{val}", "reasoning": f"Verifying title contains: {val}"}
+            elif any(x in step_clean for x in ["dom", "html", "source"]):
+                return {"action": "verify", "element_id": None, "value": f"dom:{val}", "reasoning": f"Verifying DOM HTML contains: {val}"}
             else:
                 return {"action": "verify", "element_id": None, "value": f"text:{val}", "reasoning": f"Verifying text presence: {val}"}
 
@@ -800,6 +807,14 @@ class WebAgent:
                         logger.info(f"✓ Verification success: Page title contains '{expected}'")
                         escaped_expected = self._escape_java(expected)
                         step_log["java_code"] = f'org.testng.Assert.assertTrue(page.title().toLowerCase().contains("{escaped_expected.lower()}"));'
+                    elif val.startswith("dom:"):
+                        expected = val[4:]
+                        html = page.content()
+                        if expected.lower() not in html.lower():
+                            raise AssertionError(f"Expected DOM HTML to contain '{expected}', but it was not found.")
+                        logger.info(f"✓ Verification success: DOM HTML contains '{expected}'")
+                        escaped_expected = self._escape_java(expected)
+                        step_log["java_code"] = f'org.testng.Assert.assertTrue(page.content().toLowerCase().contains("{escaped_expected.lower()}"));'
                     elif selector:
                         # Verify the text inside a specific element
                         expected = val[5:] if val.startswith("text:") else val

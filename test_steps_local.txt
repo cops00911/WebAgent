@@ -1,2 +1,2 @@
-# Local test steps for autofill
-- Fill the details for new partner by agent.
+Verify DOM contains "login-button"
+Verify DOM contains "standard_user"

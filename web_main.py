@@ -177,17 +177,228 @@ def load_all_test_cases(tc_paths: list) -> list:
                 })
     return test_cases
 
+def run_crawl_search(args, agent):
+    """
+    Run crawler search mode:
+    1. Setup browser session.
+    2. Navigate to start URL.
+    3. If --testcase is provided, run those setup/login steps first.
+    4. Start recursive crawling search from the current URL.
+    5. Output HTML crawl report and update generated TestNG Java code.
+    """
+    from web_reporter import WebCrawlReporter
+    import time
+    import re
+    
+    playwright_instance = None
+    browser = None
+    page = None
+    
+    try:
+        # 1. Setup browser
+        playwright_instance, browser, page = web_driver_utils.setup_browser(headless=args.headless)
+        
+        # 2. Navigate to starting page
+        logger.info(f"Navigating browser to: {args.url}")
+        page.goto(args.url)
+        
+        # 3. Perform pre-crawl setup/login steps if provided
+        if args.testcase:
+            tc_files = [x.strip() for x in args.testcase.split(",") if x.strip()]
+            test_cases = load_all_test_cases(tc_files)
+            if test_cases:
+                logger.info(f"Executing {len(test_cases)} setup/login test cases before starting crawl...")
+                for tc in test_cases:
+                    logger.info(f"Running setup: {tc['name']}")
+                    success, logs = agent.execute_testcase(page, tc["steps"])
+                    if not success:
+                        logger.error(f"Setup steps failed for test case '{tc['name']}'. Crawling may run without authentication.")
+        
+        # 4. Crawl same-domain pages recursively
+        from urllib.parse import urlparse
+        start_url = page.url
+        logger.info(f"Starting site crawl from URL: {start_url}")
+        
+        visited = set()
+        queue = [start_url]
+        crawl_results = []
+        found_urls = []
+        
+        while queue and len(visited) < args.crawl_max_pages:
+            current_url = queue.pop(0)
+            if current_url in visited:
+                continue
+                
+            logger.info(f"Crawling page {len(visited) + 1} of {args.crawl_max_pages}: {current_url}")
+            visited.add(current_url)
+            
+            page_result = {
+                "url": current_url,
+                "title": "",
+                "screenshot": "",
+                "found": False,
+                "error": None,
+                "status": "success"
+            }
+            
+            try:
+                page.goto(current_url)
+                web_driver_utils.wait_for_page_load(page)
+                
+                page_result["title"] = page.title()
+                page_result["screenshot"] = web_driver_utils.get_screenshot_b64(page)
+                
+                # Check for word in raw DOM HTML
+                html = page.content()
+                if args.crawl_search.lower() in html.lower():
+                    page_result["found"] = True
+                    found_urls.append(current_url)
+                    logger.info(f"🎯 FOUND match on page: {current_url}")
+                
+                # Extract links to queue
+                links = web_driver_utils.extract_same_domain_links(page, start_url)
+                for link in links:
+                    if link not in visited and link not in queue:
+                        queue.append(link)
+                        
+            except Exception as e:
+                logger.error(f"Error crawling page '{current_url}': {e}")
+                page_result["status"] = "failed"
+                page_result["error"] = str(e)
+                try:
+                    page_result["screenshot"] = web_driver_utils.get_screenshot_b64(page)
+                except Exception:
+                    pass
+            
+            crawl_results.append(page_result)
+            
+        # 5. Generate HTML crawl report
+        report_dir = os.path.dirname(os.path.abspath(args.output_report))
+        report_filepath = os.path.join(report_dir, "web_crawl_report.html")
+        reporter = WebCrawlReporter(target_url=start_url, search_word=args.crawl_search)
+        report_file = reporter.generate_report(crawl_results, report_filepath)
+        logger.info(f"✓ Crawling report generated at: {report_file}")
+        
+        # 6. Generate compiled Java TestNG tests matching each found URL
+        if found_urls:
+            java_statements = []
+            for idx, url in enumerate(found_urls, 1):
+                java_statements.append(f'        // Check page {idx} containing the target word')
+                java_statements.append(f'        page.navigate("{url}");')
+                java_statements.append(f'        org.testng.Assert.assertTrue(page.content().toLowerCase().contains("{agent._escape_java(args.crawl_search).lower()}"));')
+                java_statements.append('')
+            
+            # Write a single method for PlaywrightAutomation
+            method_template = f"""    @Test(description = "Verify presence of '{agent._escape_java(args.crawl_search)}' on crawled pages")
+    public void testCrawlSearchWord() {{
+        System.out.println("Executing Crawled URL Verifications...");
+{chr(10).join(java_statements)}
+    }}"""
+            
+            java_filename = os.path.basename(args.output_java)
+            class_name, _ = os.path.splitext(java_filename)
+            class_name = re.sub(r'[^a-zA-Z0-9_]', '', class_name)
+            if class_name and class_name[0].isdigit():
+                class_name = "TC" + class_name
+            if not class_name:
+                class_name = "PlaywrightAutomation"
+                
+            testng_code = f"""package com.example;
+
+import com.microsoft.playwright.*;
+import org.testng.annotations.*;
+import org.testng.Assert;
+
+public class {class_name} {{
+    private Playwright playwright;
+    private Browser browser;
+    private BrowserContext context;
+    private Page page;
+
+    @BeforeClass
+    public void setUp() {{
+        playwright = Playwright.create();
+        browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
+            .setHeadless(true)
+            .setSlowMo(500));
+    }}
+
+    @BeforeMethod
+    public void setUpMethod() {{
+        context = browser.newContext(new Browser.NewContextOptions()
+            .setViewportSize(1280, 800)
+            .setIgnoreHTTPSErrors(true));
+        page = context.newPage();
+    }}
+
+{method_template}
+
+    @AfterMethod
+    public void tearDownMethod() {{
+        if (context != null) {{
+            context.close();
+        }}
+    }}
+
+    @AfterClass
+    public void tearDown() {{
+        if (browser != null) {{
+            browser.close();
+        }}
+        if (playwright != null) {{
+            playwright.close();
+        }}
+    }}
+}}
+"""
+            with open(args.output_java, "w", encoding="utf-8") as f:
+                f.write(testng_code)
+            logger.info(f"✓ Generated crawling verification Java code written to: {args.output_java}")
+            
+        logger.info(f"\n==================================================")
+        logger.info(f"CRAWLER SEARCH SUMMARY")
+        logger.info(f"==================================================")
+        logger.info(f"  * Total pages crawled: {len(visited)}")
+        logger.info(f"  * Matches found:       {len(found_urls)}")
+        for url in found_urls:
+            logger.info(f"    - {url}")
+        logger.info(f"==================================================")
+        
+    finally:
+        if browser:
+            try:
+                browser.close()
+            except Exception:
+                pass
+        if playwright_instance:
+            try:
+                playwright_instance.stop()
+            except Exception:
+                pass
+
 def main():
     parser = argparse.ArgumentParser(description="WebAgent - Autonomous Web Testcase Playwright Agent")
     parser.add_argument("--url", required=True, help="Initial target URL to navigate to")
-    parser.add_argument("--testcase", required=True, help="Path to text or Excel testcase files (comma-separated list)")
+    parser.add_argument("--testcase", help="Path to text or Excel testcase files (comma-separated list)")
     parser.add_argument("--output-java", default="PlaywrightAutomation.java", help="Path to write the generated Playwright Java class file")
     parser.add_argument("--output-report", default="web_report.html", help="Path to write the visual HTML report")
     parser.add_argument("--headless", action="store_true", help="Run browser in headless mode (default: False)")
     parser.add_argument("--model", default="gpt-4o", help="OpenAI Model name (default: gpt-4o)")
+    parser.add_argument("--crawl-search", help="Target word to recursively search for across the website DOM")
+    parser.add_argument("--crawl-max-pages", type=int, default=20, help="Maximum number of pages to crawl (default: 20)")
     
     args = parser.parse_args()
- 
+
+    if not args.testcase and not args.crawl_search:
+        parser.error("either --testcase or --crawl-search must be provided")
+
+    # Initialize the WebAgent
+    agent = WebAgent(model=args.model)
+
+    if args.crawl_search:
+        run_crawl_search(args, agent)
+        return
+
     # Split input comma-separated files
     tc_files = [x.strip() for x in args.testcase.split(",") if x.strip()]
     
@@ -203,9 +414,6 @@ def main():
     overall_success = True
     results = []
     test_cases_runs = []
-    
-    # Initialize the WebAgent
-    agent = WebAgent(model=args.model)
     
     for tc_idx, tc in enumerate(test_cases, 1):
         logger.info(f"\n==================================================")

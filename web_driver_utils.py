@@ -272,3 +272,29 @@ def extract_interactive_elements(page: Page) -> List[Dict[str, Any]]:
     except Exception as e:
         logger.error(f"Failed to evaluate DOM extract script: {e}")
         return []
+
+def extract_same_domain_links(page: Page, base_url: str) -> List[str]:
+    """
+    Extract all unique same-domain HTTP/HTTPS links (absolute URLs) from the current page.
+    """
+    from urllib.parse import urlparse, urljoin
+    try:
+        parsed_base = urlparse(base_url)
+        base_domain = parsed_base.netloc
+        
+        # Extract all href attributes from anchor tags using Playwright
+        hrefs = page.eval_on_selector_all("a[href]", "elements => elements.map(el => el.href)")
+        
+        valid_links = []
+        for href in hrefs:
+            absolute_url = urljoin(page.url, href)
+            parsed_href = urlparse(absolute_url)
+            
+            if parsed_href.netloc == base_domain and parsed_href.scheme in ["http", "https"]:
+                # Strip trailing hashes and query params that refer to page sections
+                clean_url = absolute_url.split('#')[0]
+                valid_links.append(clean_url)
+        return list(set(valid_links))
+    except Exception as e:
+        logger.error(f"Failed to extract same-domain links: {e}")
+        return []

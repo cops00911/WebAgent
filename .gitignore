@@ -5,11 +5,16 @@
 __pycache__/
 *.py[cod]
 *$py.class
+dist/
+build/
+*.egg-info/
 
 # Application execution logs & visual reports
 *.log
 web_report_*.html
 web_report.html
+web_crawl_report.html
+~$*.xlsx
 
 # Generated automation outputs (compiled test files)
 test-output/

@@ -28,9 +28,9 @@ public class PlaywrightAutomation {
         page = context.newPage();
     }
 
-    @Test(description = "Verify Product page after login.")
-    public void testVerifyProductPageAfterLogin() {
-        System.out.println("Executing Test Case: Verify Product page after login....");
+    @Test(description = "test_steps")
+    public void testTestSteps() {
+        System.out.println("Executing Test Case: test_steps...");
         page.navigate("https://www.saucedemo.com/");
         page.locator("[data-test=\"username\"]").first().fill("standard_user");
                 waitForPageLoad(page);
@@ -38,24 +38,24 @@ public class PlaywrightAutomation {
                 waitForPageLoad(page);
         page.locator("[data-test=\"login-button\"]").first().click();
                 waitForPageLoad(page);
-        org.testng.Assert.assertTrue(page.title().toLowerCase().contains("swag lab"));
-    }
-
-    @Test(description = "Verify logout functionality.")
-    public void testVerifyLogoutFunctionality() {
-        System.out.println("Executing Test Case: Verify logout functionality....");
-        page.navigate("https://www.saucedemo.com/");
-        page.locator("[data-test=\"username\"]").first().fill("standard_user");
+        org.testng.Assert.assertTrue(page.title().toLowerCase().contains("swag labs"));
+        page.locator("[data-test=\"item-4-title-link\"]").first().click();
                 waitForPageLoad(page);
-        page.locator("[data-test=\"password\"]").first().fill("secret_sauce");
+        page.locator("[data-test=\"add-to-cart\"]").first().click();
                 waitForPageLoad(page);
-        page.locator("[data-test=\"login-button\"]").first().click();
+        page.locator("[data-test=\"shopping-cart-link\"]").first().click();
                 waitForPageLoad(page);
-        org.testng.Assert.assertTrue(page.title().toLowerCase().contains("swag lab"));
-        page.locator("#react-burger-menu-btn").first().click();
+        page.locator("[data-test=\"checkout\"]").first().click();
                 waitForPageLoad(page);
-        page.locator("[data-test=\"logout-sidebar-link\"]").first().click();
+        page.locator("[data-test=\"firstName\"]").first().fill("Rachit");
                 waitForPageLoad(page);
+        page.locator("[data-test=\"lastName\"]").first().fill("Mehta");
+                waitForPageLoad(page);
+        page.locator("[data-test=\"postalCode\"]").first().fill("390023");
+                waitForPageLoad(page);
+        page.locator("[data-test=\"continue\"]").first().click();
+                waitForPageLoad(page);
+        // Step completed.
     }
 
     @AfterMethod
