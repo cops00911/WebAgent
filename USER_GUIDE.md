@@ -132,12 +132,18 @@ WebAgent supports test cases written in natural plain language, either in unstru
 ### 1. Plain Text Format (`.txt`)
 Each line represents a manual test step. Leading bullet points (`-`, `*`) or numbers are ignored. Empty lines or lines starting with `#` are ignored as comments.
 
-Example [test_steps.txt](file:///Users/parker.m/eclipse-workspace/WebAgent/test_steps.txt):
+You can also define an optional `Preconditions:` section before your `Test Steps:`. WebAgent will execute the precondition steps first to set up state before executing the remaining steps.
+
+Example [test_steps.txt](file:///c:/Users/rachit.mehta/Downloads/WebAgent-main/WebAgent-main/test_steps.txt):
 ```text
 # Saucedemo Purchase Flow Test
+
+Preconditions:
 Type "standard_user" in username input
 Type "secret_sauce" in password input
 Click login button
+
+Test Steps:
 Verify page title contains "Swag Labs"
 Verify product title "Sauce Labs Backpack" is visible
 Click on the menu drawer button
@@ -146,12 +152,15 @@ Click on the "Logout" sidebar link
 
 ### 2. Excel Spreadsheets (`.xlsx` or `.xls`)
 WebAgent scans the active sheet in the workbook to detect test case rows:
-* It looks for columns with headers containing terms like: `test steps`, `test step`, `steps`, `action`, `actions`.
-* It optionally looks for description headers matching: `description`, `name`, `test case description`, `title`, `summary`.
-* Each row containing a description and a sequence of steps is automatically parsed as an independent test case.
+* **Preconditions (Optional):** Columns with headers containing `preconditions`, `precondition`, `prerequisites`, `prerequisite`, or `setup`. Steps in this column are automatically executed first.
+* **Test Steps (Required):** Columns with headers containing `test steps`, `test step`, `steps`, `step description`, `actions`, `action`, `step`.
+* **Description (Optional):** Columns matching `description`, `name`, `test case description`, `title`, `summary`, `test case`.
+* Each row containing a sequence of steps is automatically parsed as an independent test case.
 
 > [!TIP]
-> If a cell contains multiple lines (ALT+Enter in Excel), WebAgent will parse each line in that cell as a sequential step inside the same test case execution.
+> **Handling Preconditions in Excel:**
+> 1. **Dedicated Column (Option 3):** Add a `Preconditions` column next to `Test Steps`. WebAgent automatically prepends those actions.
+> 2. **Single Cell (Option 1):** In your `Test Steps` cell, use `ALT+Enter` to write your setup/precondition actions as the top lines followed by your test steps. WebAgent executes them sequentially.
 
 ---
 

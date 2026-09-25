@@ -11,13 +11,19 @@ from web_reporter import WebHTMLReporter
 # Load environment configuration (.env)
 load_dotenv()
 
+# Reconfigure stdout/stderr for utf-8 (prevents charmap errors on Windows)
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler("web_agent.log", mode="w")
+        logging.FileHandler("web_agent.log", mode="w", encoding="utf-8")
     ]
 )
 logger = logging.getLogger("WebAgent.main")
@@ -45,31 +51,53 @@ def parse_excel_test_cases(file_path: str) -> list:
     
     step_headers = {"test steps", "test step", "steps", "step description", "actions", "action", "step"}
     desc_headers = {"description", "test case description", "name", "test case name", "title", "summary", "test case"}
+    precondition_headers = {
+        "precondition", "preconditions", "pre-condition", "pre-conditions",
+        "prerequisite", "prerequisites", "pre-requisite", "pre-requisites", "setup"
+    }
     
     step_col_idx = None
     desc_col_idx = None
+    pre_col_idx = None
     header_row_idx = None
     
     # Inspect first 10 rows to find headers
     for row_idx, row in enumerate(sheet.iter_rows(max_row=10, values_only=True), 1):
+        found_in_row = {}
         for col_idx, val in enumerate(row, 1):
             if val:
-                val_clean = str(val).strip().lower()
-                if val_clean in step_headers and step_col_idx is None:
-                    step_col_idx = col_idx
-                    header_row_idx = row_idx
-                elif val_clean in desc_headers and desc_col_idx is None:
-                    desc_col_idx = col_idx
-                    header_row_idx = row_idx
-        if step_col_idx is not None:
+                val_clean = str(val).strip().lower().rstrip(":")
+                if val_clean in step_headers or "test step" in val_clean or "test steps" in val_clean:
+                    found_in_row['step'] = col_idx
+                elif val_clean in desc_headers or "test case name" in val_clean or "test description" in val_clean:
+                    found_in_row['desc'] = col_idx
+                elif val_clean in precondition_headers or "precondition" in val_clean or "prerequisite" in val_clean or val_clean == "setup":
+                    found_in_row['pre'] = col_idx
+        if 'step' in found_in_row:
+            step_col_idx = found_in_row['step']
+            desc_col_idx = found_in_row.get('desc', desc_col_idx)
+            pre_col_idx = found_in_row.get('pre', pre_col_idx)
+            header_row_idx = row_idx
             break
+        else:
+            if 'desc' in found_in_row and desc_col_idx is None:
+                desc_col_idx = found_in_row['desc']
+            if 'pre' in found_in_row and pre_col_idx is None:
+                pre_col_idx = found_in_row['pre']
             
     test_cases = []
     
+    # Section header regex (to skip labels like 'Preconditions:' or 'Test Steps:' inside step cells)
+    section_header_re = re.compile(r'^(?i:preconditions?|prerequisites?|pre-conditions?|pre-requisites?|test\s*steps?|steps?|setup):?\s*$')
+
     # Helper to clean individual steps
     def clean_step(s: str) -> str:
         s_clean = s.strip()
+        if section_header_re.match(s_clean):
+            return ""
         s_clean = re.sub(r'^(?i:step\s+\d+[\s\.:\-]*)?[\d\-\*\•\.\)\(]*\s*', '', s_clean).strip()
+        if section_header_re.match(s_clean):
+            return ""
         return s_clean
         
     def get_steps_from_value(val) -> list:
@@ -96,6 +124,11 @@ def parse_excel_test_cases(file_path: str) -> list:
             if not row_steps:
                 continue
                 
+            pre_steps = []
+            if pre_col_idx is not None:
+                pre_val = sheet.cell(row=r, column=pre_col_idx).value
+                pre_steps = get_steps_from_value(pre_val)
+                
             desc_val = None
             if desc_col_idx is not None:
                 desc_val = sheet.cell(row=r, column=desc_col_idx).value
@@ -108,7 +141,8 @@ def parse_excel_test_cases(file_path: str) -> list:
             test_cases.append({
                 "name": sanitize_class_name(desc_str),
                 "description": desc_str,
-                "steps": row_steps,
+                "preconditions": pre_steps,
+                "steps": pre_steps + row_steps,
                 "source": f"{os.path.basename(file_path)}: Row {r}"
             })
     else:
@@ -136,6 +170,7 @@ def parse_excel_test_cases(file_path: str) -> list:
                     test_cases.append({
                         "name": f"TestCase_{r}",
                         "description": f"TestCase_{r}",
+                        "preconditions": [],
                         "steps": row_steps,
                         "source": f"{os.path.basename(file_path)}: Row {r}"
                     })
@@ -145,6 +180,7 @@ def parse_excel_test_cases(file_path: str) -> list:
 
 def load_all_test_cases(tc_paths: list) -> list:
     """Load all test cases from text files or Excel spreadsheets."""
+    import re
     test_cases = []
     for path in tc_paths:
         abs_path = os.path.abspath(path)
@@ -160,19 +196,35 @@ def load_all_test_cases(tc_paths: list) -> list:
             test_cases.extend(sheet_cases)
         else:
             steps = []
+            preconditions = []
+            current_section = "steps"
             with open(abs_path, "r", encoding="utf-8") as f:
                 for line in f:
                     line_clean = line.strip()
                     if not line_clean or line_clean.startswith("#"):
                         continue
-                    clean_step = line_clean.lstrip("-*").strip()
-                    if clean_step:
-                        steps.append(clean_step)
-            if steps:
+                    # Check for section headers (e.g. Preconditions:, Steps:)
+                    if re.match(r'^(?i:preconditions?|prerequisites?|pre-conditions?|pre-requisites?|setup):?\s*$', line_clean):
+                        current_section = "preconditions"
+                        continue
+                    if re.match(r'^(?i:test\s*steps?|steps?|actions?):?\s*$', line_clean):
+                        current_section = "steps"
+                        continue
+                        
+                    clean_s = re.sub(r'^(?i:step\s+\d+[\s\.:\-]*)?[\d\-\*\•\.\)\(]*\s*', '', line_clean).strip()
+                    if clean_s and not clean_s.startswith("#"):
+                        if current_section == "preconditions":
+                            preconditions.append(clean_s)
+                        else:
+                            steps.append(clean_s)
+                            
+            all_steps = preconditions + steps
+            if all_steps:
                 test_cases.append({
                     "name": sanitize_class_name(name_no_ext),
                     "description": name_no_ext,
-                    "steps": steps,
+                    "preconditions": preconditions,
+                    "steps": all_steps,
                     "source": basename
                 })
     return test_cases
@@ -419,7 +471,11 @@ def main():
         logger.info(f"\n==================================================")
         logger.info(f"RUNNING TEST CASE {tc_idx} of {len(test_cases)}: {tc['name']}")
         logger.info(f"Source: {tc['source']}")
-        logger.info(f"Steps ({len(tc['steps'])}):")
+        if tc.get("preconditions"):
+            logger.info(f"Preconditions ({len(tc['preconditions'])}):")
+            for idx, s in enumerate(tc["preconditions"], 1):
+                logger.info(f"  [Precondition {idx}] {s}")
+        logger.info(f"Steps to Execute ({len(tc['steps'])}):")
         for idx, s in enumerate(tc["steps"], 1):
             logger.info(f"  {idx}. {s}")
         logger.info(f"==================================================")

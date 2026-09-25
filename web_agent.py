@@ -5,6 +5,7 @@ import time
 import random
 import re
 from typing import Dict, Any, List, Tuple
+from playwright.sync_api import Page
 from openai import OpenAI
 import web_driver_utils
 

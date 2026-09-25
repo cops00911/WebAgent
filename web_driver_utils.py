@@ -76,7 +76,7 @@ def extract_interactive_elements(page: Page) -> List[Dict[str, Any]]:
     """
     Inject JS to inspect the DOM and extract detailed metadata of visible interactive elements.
     """
-    js_extract = """
+    js_extract = r"""
     () => {
         const elements = Array.from(document.querySelectorAll(
             'a, button, input, select, textarea, [role="button"], [role="link"], [role="checkbox"], [role="radio"], [role="combobox"], [contenteditable="true"]'

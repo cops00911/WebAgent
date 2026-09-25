@@ -1,7 +1,9 @@
-# Web Agent Test Steps
+Preconditions:
 - Type "standard_user" in Username
 - Type "secret_sauce" in Password
 - Click on "Login" button
+
+Test Steps:
 - Verify page title contains "Swag Labs"
 - Click on "Sauce Labs Backpack" text
 - Click on "Add to cart" button
